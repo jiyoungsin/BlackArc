@@ -24,13 +24,31 @@ app.get('/', (req, res) => {
 
 // Querying the Data
 app.get('/points', (req, res) => {
-    Points.findOne()
+    Points.find()
     .then(function(data){ 
         return res.json(data);
     }).catch(function(ERR){ 
         console.log(`ERROR: while fetching Points: ${ERR}`);
     });
 });
+
+
+// Querying the Data
+app.post('/points', (req, res) => {
+    Points.create({
+        points: [200,170,300,260,380,220,330,370,150,320],
+        color: "0xAA33BB",
+        shapeType: "Polygon",
+    }).then(function(data){ 
+        console.log(`Successfully added new points!`);
+        res.sendStatus(201);
+    }).catch(function(ERR){ 
+        console.log(`ERROR: while adding Points: ${ERR}`);
+        res.status(500).json(ERR);
+    });
+});
+
+
 
 
 app.listen(PORT, () => {
