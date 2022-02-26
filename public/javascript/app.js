@@ -10,6 +10,7 @@ const app = new Application({
 
 document.body.appendChild(app.view);
 
+app.stage.interactive = true;
 
 // VARIABLES
 const Graphics = PIXI.Graphics;
@@ -38,101 +39,34 @@ fetch('/points', ).then(function(res){
               continue;
         }
     }
+    // Scale mode for all textures, will retain pixelation
+    PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
 
-    const realPath = new PIXI.Graphics();
+    const sprite = PIXI.Sprite.from('assets/javascript/bunny.png');
+    console.log(sprite);
+    // Set the initial position
+    sprite.anchor.set(0.5);
+    sprite.x = app.screen.width / 2;
+    sprite.y = app.screen.height / 2;
+    // Opt-in to interactivity
+    sprite.interactive = true;
 
-    realPath.lineStyle(2, 0xFFFFFF, 1);
-    realPath.moveTo(700, 100);
-    realPath.lineTo(800, 200);
-    realPath.lineTo(1000, 200);
-    realPath.lineTo(1050, 50);
+    // Shows hand cursor
+    sprite.buttonMode = true;
 
-    realPath.position.x = 50;
-    realPath.position.y = 50;
+    // Pointers normalize touch and mouse
+    sprite.on('pointerdown', onClick);
 
-    app.stage.addChild(realPath);
-    const bezier = new PIXI.Graphics();
+    // // Alternatively, use the mouse & touch events:
+    // // sprite.on('click', onClick); // mouse-only
+    // // sprite.on('tap', onClick); // touch-only
 
-    bezier.lineStyle(5, 0xAA0000, 1);
-    bezier.moveTo(700, 100);
-    bezier.bezierCurveTo(800, 200, 1000, 200, 1050, 50);
+    app.stage.addChild(sprite);
 
-    bezier.position.x = 50;
-    bezier.position.y = 50;
-
-    app.stage.addChild(bezier);
-
-    // // BEZIER CURVE 2 ////
-    const realPath2 = new PIXI.Graphics();
-
-    realPath2.lineStyle(2, 0xFFFFFF, 1);
-    realPath2.moveTo(500, 500);
-    realPath2.lineTo(500, 400);
-    realPath2.lineTo(650, 650);
-    realPath2.lineTo(640, 500);
-
-    realPath2.position.x = 320;
-    realPath2.position.y = 150;
-
-    app.stage.addChild(realPath2);
-
-    const bezier2 = new PIXI.Graphics();
-
-    bezier2.lineStyle(5, 0xAA0000, 1);
-    bezier2.moveTo(500, 500);
-    bezier2.bezierCurveTo(500, 400, 650, 650, 640, 500);
-
-    bezier2.position.x = 320;
-    bezier2.position.y = 150;
-
-    app.stage.addChild(bezier2);
-
-    // // ARC ////
-    const arc = new PIXI.Graphics();
-
-    arc.lineStyle(5, 0xAA00BB, 1);
-    arc.arc(1200, 1000, 50, Math.PI, 2 * Math.PI);
-
-    app.stage.addChild(arc);
-
-    // // ARC 2 ////
-    const arc2 = new PIXI.Graphics();
-
-    arc2.lineStyle(6, 0x3333DD, 1);
-    arc2.arc(650, 270, 60, 2 * Math.PI, 3 * Math.PI / 2);
-
-    app.stage.addChild(arc2);
-
-    const arc3 = new PIXI.Graphics();
-
-    // arc3.lineTextureStyle({ width: 20, texture: sprite.texture });
-    arc3.lineStyle(20, 0x3333DD, 1);
-    arc3.arc(650, 420, 60, 2 * Math.PI, 2.5 * Math.PI / 2);
-
-    app.stage.addChild(arc3);
+    function onClick() {
+        sprite.scale.x *= 1.25;
+        sprite.scale.y *= 1.25;
+    }
 
 
-    // / Hole ////
-    const rectAndHole = new PIXI.Graphics();
-
-    rectAndHole.beginFill(0x00FF00);
-    rectAndHole.drawRect(350, 975, 150, 150);
-    rectAndHole.beginHole();
-    rectAndHole.drawCircle(375, 1025, 25);
-    rectAndHole.drawCircle(425, 1050, 25);
-    rectAndHole.drawCircle(475, 1075, 25);
-    rectAndHole.endHole();
-    rectAndHole.endFill();
-
-    app.stage.addChild(rectAndHole);
-
-    // // // Line Texture Style ////
-    // const beautifulRect = new PIXI.Graphics();
-
-    // beautifulRect.lineTextureStyle({ width: 20, texture: sprite.texture });
-    // beautifulRect.beginFill(0xFF0000);
-    // beautifulRect.drawRect(80, 350, 150, 150);
-    // beautifulRect.endFill();
-
-    // app.stage.addChild(beautifulRect);
 });
