@@ -1,72 +1,100 @@
-// PIXI
-const Application = PIXI.Application;
-
-const app = new Application({
+const app = new PIXI.Application({
     width: 1500,
     height: 1500,
     backgroundColor: 0x1099bb,
     antialias: true
 })
-
 document.body.appendChild(app.view);
 
+// set interactive true
 app.stage.interactive = true;
 
-// VARIABLES
-const Graphics = PIXI.Graphics;
+// grabbing the image
+const bg = PIXI.Sprite.from('assets/assets/bg_rotate.jpg');
 
-// use fetch to get the /points. 
-fetch('/points', ).then(function(res){ 
-    return res.json() 
-}).then(function(data){ 
-    const arrayOfData = data;
-    for(let i=0; i< arrayOfData.length; i++){
-        const graphicsObject = new Graphics();
-        switch(data[i].shapeType) {
-            case "Rectangle":
-                graphicsObject.beginFill(data[i].color);
-                graphicsObject.drawRect(data[i].points[0], data[i].points[1], data[i].points[2], data[i].points[3]);
-                graphicsObject.endFill();
-                app.stage.addChild(graphicsObject);
-                break;
-            case "Polygon":
-                graphicsObject.beginFill(data[i].color);
-                graphicsObject.drawPolygon(data[i].points);
-                graphicsObject.endFill();
-                app.stage.addChild(graphicsObject);
-                break;
-            default:
-              continue;
-        }
+// Setting rotation Anchor point.
+bg.anchor.set(0.5);
+
+// setting the location of the image.
+bg.x = app.screen.width / 2;
+bg.y = app.screen.height / 2;
+
+// add the BG object.
+app.stage.addChild(bg);
+
+// Making an object/Container to allow for adding of other objects.
+const container = new PIXI.Container();
+container.x = app.screen.width / 2;
+container.y = app.screen.height / 2;
+
+// add a bunch of sprites
+const bgFront = PIXI.Sprite.from('assets/assets/bg_scene_rotate.jpg');
+bgFront.anchor.set(0.5);
+
+const light2 = PIXI.Sprite.from('assets/assets/light_rotate_2.png');
+light2.anchor.set(0.5);
+
+const light1 = PIXI.Sprite.from('assets/assets/light_rotate_1.png');
+light1.anchor.set(0.5);
+
+const panda = PIXI.Sprite.from('assets/assets/panda.png');
+panda.anchor.set(0.5);
+
+container.addChild(bgFront, light2, light1, panda);
+// adding container to the app.
+app.stage.addChild(container);
+
+// let's create a moving shape
+const thing = new PIXI.Graphics();
+app.stage.addChild(thing);
+thing.x = app.screen.width / 2;
+thing.y = app.screen.height / 2;
+thing.lineStyle(1);
+
+container.mask = thing;
+
+// toggling the masking.
+app.stage.on('pointertap', () => {
+    if (!container.mask) {
+        container.mask = thing;
+    } else {
+        container.mask = null;
     }
-    // Scale mode for all textures, will retain pixelation
-    PIXI.settings.SCALE_MODE = PIXI.SCALE_MODES.NEAREST;
+});
 
-    const sprite = PIXI.Sprite.from('assets/javascript/bunny.png');
-    console.log(sprite);
-    // Set the initial position
-    sprite.anchor.set(0.5);
-    sprite.x = app.screen.width / 2;
-    sprite.y = app.screen.height / 2;
-    // Opt-in to interactivity
-    sprite.interactive = true;
+//adding some text to the stage.
+const help = new PIXI.Text('Click or tap to turn masking on / off.', {
+    fontFamily: 'Arial',
+    fontSize: 12,
+    fontWeight: 'bold',
+    fill: 'white',
+});
+help.y = app.screen.height - 26;
+help.x = 10;
+app.stage.addChild(help);
 
-    // Shows hand cursor
-    sprite.buttonMode = true;
+// loop for the elements inside.
+let count = 0;
+app.ticker.add(() => {
+    bg.rotation += 0.01;
+    bgFront.rotation -= 0.01;
 
-    // Pointers normalize touch and mouse
-    sprite.on('pointerdown', onClick);
+    light1.rotation += 0.02;
+    light2.rotation += 0.01;
 
-    // // Alternatively, use the mouse & touch events:
-    // // sprite.on('click', onClick); // mouse-only
-    // // sprite.on('tap', onClick); // touch-only
+    // using sin and cos to make the image go bigger and smaller
+    // increase 0.04 to increase the magnitude.
+    panda.scale.x = 1 + Math.sin(count) * 0.04;
+    panda.scale.y = 1 + Math.cos(count) * 0.04;
 
-    app.stage.addChild(sprite);
+    count += 0.1;
 
-    function onClick() {
-        sprite.scale.x *= 1.25;
-        sprite.scale.y *= 1.25;
-    }
+    thing.clear();
 
-
+    thing.beginFill(0x8bc5ff, 0.4);
+    thing.moveTo(-120 + Math.sin(count) * 20, -100 + Math.cos(count) * 20);
+    thing.lineTo(120 + Math.cos(count) * 20, -100 + Math.sin(count) * 20);
+    thing.lineTo(120 + Math.sin(count) * 20, 100 + Math.cos(count) * 20);
+    thing.lineTo(-120 + Math.cos(count) * 20, 100 + Math.sin(count) * 20);
+    thing.rotation = count * 0.1;
 });
