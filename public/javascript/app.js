@@ -1,46 +1,60 @@
-const app = new PIXI.Application();
+const app = new PIXI.Application({
+    width: 1250,
+    height: 1250,
+    backgroundColor: 0x1099bb,
+    antialias: true
+})
 document.body.appendChild(app.view);
 
-app.stage.interactive = true;
+// Setting the constants
+// Inner radius of the circle
+const radius = 100;
 
-const bg = PIXI.Sprite.from('assets/assets/bg_plane.jpg');
+// The blur amount
+const blurSize = 32;
+// adding to loader object
+app.loader.add('grass', 'assets/assets/bg_grass.jpg');
+// linking the loader with the callback function setup
+app.loader.load(setup);
 
-app.stage.addChild(bg);
+function setup(loader, resources) {
+    // using resource object to create background sprite
+    const background = new PIXI.Sprite(resources.grass.texture);
+    app.stage.addChild(background);
+    background.width = app.screen.width;
+    background.height = app.screen.height;
 
-const cells = PIXI.Sprite.from('assets/assets/cells.png');
+    // drawing of circle
+    const circle = new PIXI.Graphics()
+        .beginFill(0xFF0000)
+        .drawCircle(radius + blurSize, radius + blurSize, radius)
+        .endFill();
+    // adding blur effect
+    circle.filters = [new PIXI.filters.BlurFilter(blurSize)];
 
-cells.scale.set(1.5);
+    // creating a rectangle
+    const bounds = new PIXI.Rectangle(0, 0, (radius + blurSize) * 2, (radius + blurSize) * 2);
+    // creating texture for the circle
+    // LINEAR Smooth scaling
+    // NEAREST Pixelating scaling
+    const texture = app.renderer.generateTexture(circle, PIXI.SCALE_MODES.LINEAR, 1, bounds);
+    // adding the texture to the sprite.
+    const focus = new PIXI.Sprite(texture);
+    
+    // adding the focus to the stage
+    app.stage.addChild(focus);
+    // adding the focus mask to the background.
+    background.mask = focus;
 
-const mask = PIXI.Sprite.from('assets/assets/flowerTop.png');
-mask.anchor.set(0.5);
-mask.x = 310;
-mask.y = 190;
+    // setting interactive to true.
+    app.stage.interactive = true;
+    // creating an event listener on mousemove
+    app.stage.on('mousemove', pointerMove);
 
-cells.mask = mask;
-
-app.stage.addChild(mask, cells);
-
-const target = new PIXI.Point();
-
-reset();
-
-function reset() {
-    target.x = Math.floor(Math.random() * 550);
-    target.y = Math.floor(Math.random() * 300);
-}
-
-app.ticker.add(() => {
-    // 550 - 275 = 275
-    // 275 * 0.1 = 27.5
-    // 275 + 27.5 = 302.5
-    // new mask.x = 302.5
-    // 550 - 302.5 = 247.5
-    // Repeat
-    // How to give the illusion of gliding.
-    mask.x += (target.x - mask.x) * 0.1;
-    mask.y += (target.y - mask.y) * 0.1;
-
-    if (Math.abs(mask.x - target.x) < 1) {
-        reset();
+    // getting the mouse X and Y 
+    // moving the focus/Mask to the cursors position.
+    function pointerMove(event) {
+        focus.position.x = event.data.global.x - focus.width / 2;
+        focus.position.y = event.data.global.y - focus.height / 2;
     }
-});
+}
