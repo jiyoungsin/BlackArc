@@ -1,60 +1,41 @@
-const app = new PIXI.Application({
-    width: 1250,
-    height: 1250,
-    backgroundColor: 0x1099bb,
-    antialias: true
-})
+const app = new PIXI.Application();
 document.body.appendChild(app.view);
 
-// Setting the constants
-// Inner radius of the circle
-const radius = 100;
+const bg = PIXI.Sprite.from('assets/assets/pixi-filters/bg_depth_blur.jpg');
+bg.width = app.screen.width;
+bg.height = app.screen.height;
+app.stage.addChild(bg);
 
-// The blur amount
-const blurSize = 32;
-// adding to loader object
-app.loader.add('grass', 'assets/assets/bg_grass.jpg');
-// linking the loader with the callback function setup
-app.loader.load(setup);
+const littleDudes = PIXI.Sprite.from('assets/assets/pixi-filters/depth_blur_dudes.jpg');
+littleDudes.x = (app.screen.width / 2) - 315;
+littleDudes.y = 200;
+app.stage.addChild(littleDudes);
 
-function setup(loader, resources) {
-    // using resource object to create background sprite
-    const background = new PIXI.Sprite(resources.grass.texture);
-    app.stage.addChild(background);
-    background.width = app.screen.width;
-    background.height = app.screen.height;
+const littleRobot = PIXI.Sprite.from('assets/assets/pixi-filters/depth_blur_moby.jpg');
+littleRobot.x = (app.screen.width / 2) - 200;
+littleRobot.y = 100;
+app.stage.addChild(littleRobot);
 
-    // drawing of circle
-    const circle = new PIXI.Graphics()
-        .beginFill(0xFF0000)
-        .drawCircle(radius + blurSize, radius + blurSize, radius)
-        .endFill();
-    // adding blur effect
-    circle.filters = [new PIXI.filters.BlurFilter(blurSize)];
+// creating blur filters
+const blurFilter1 = new PIXI.filters.BlurFilter();
+const blurFilter2 = new PIXI.filters.BlurFilter();
 
-    // creating a rectangle
-    const bounds = new PIXI.Rectangle(0, 0, (radius + blurSize) * 2, (radius + blurSize) * 2);
-    // creating texture for the circle
-    // LINEAR Smooth scaling
-    // NEAREST Pixelating scaling
-    const texture = app.renderer.generateTexture(circle, PIXI.SCALE_MODES.LINEAR, 1, bounds);
-    // adding the texture to the sprite.
-    const focus = new PIXI.Sprite(texture);
-    
-    // adding the focus to the stage
-    app.stage.addChild(focus);
-    // adding the focus mask to the background.
-    background.mask = focus;
+// adding the filters via reference
+littleDudes.filters = [blurFilter1];
+littleRobot.filters = [blurFilter2];
 
-    // setting interactive to true.
-    app.stage.interactive = true;
-    // creating an event listener on mousemove
-    app.stage.on('mousemove', pointerMove);
+let count = 0;
 
-    // getting the mouse X and Y 
-    // moving the focus/Mask to the cursors position.
-    function pointerMove(event) {
-        focus.position.x = event.data.global.x - focus.width / 2;
-        focus.position.y = event.data.global.y - focus.height / 2;
-    }
-}
+// anything that is predictable uses the ticker.
+app.ticker.add(() => {
+    count += 0.05;
+    // interesting way to blur images.
+    // sin and cos are opposites.
+    const blurAmount = Math.cos(count);
+    const blurAmount2 = Math.sin(count);
+
+    // Calling the blur using the object.
+    littleDudes.filters[0].blur = 20 * (blurAmount);
+    // using reference to change the blurFilter.
+    blurFilter2.blur = 20 * (blurAmount2);
+});
