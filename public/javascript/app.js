@@ -30,6 +30,13 @@ function reset() {
 }
 
 app.ticker.add(() => {
+    // 550 - 275 = 275
+    // 275 * 0.1 = 27.5
+    // 275 + 27.5 = 302.5
+    // new mask.x = 302.5
+    // 550 - 302.5 = 247.5
+    // Repeat
+    // How to give the illusion of gliding.
     mask.x += (target.x - mask.x) * 0.1;
     mask.y += (target.y - mask.y) * 0.1;
 
