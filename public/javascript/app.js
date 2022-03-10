@@ -1,48 +1,44 @@
-const app = new PIXI.Application({
-    width: 1250,
-    height: 1250,
-    backgroundColor: 0x1099bb,
-    antialias: true
-})
+const app = new PIXI.Application();
 document.body.appendChild(app.view);
 
-app.stage.interactive = true;
+let count = 0;
 
-const container = new PIXI.Container();
-app.stage.addChild(container);
+// build a rope!
+const ropeLength = 918 / 20;
+// the image is 918 px
+// 45.9px per point.
 
-const flag = PIXI.Sprite.from('assets/assets/pixi-filters/flag.png');
-container.addChild(flag);
-flag.x = 100;
-flag.y = 100;
+// points array 
+const points = [];
 
-// grabbing a graphics noise 
-const displacementSprite = PIXI.Sprite.from('assets/assets/pixi-filters/displacement_map_repeat.jpg');
-// Make sure the sprite is wrapping.
-displacementSprite.texture.baseTexture.wrapMode = PIXI.WRAP_MODES.REPEAT;
-const displacementFilter = new PIXI.filters.DisplacementFilter(displacementSprite);
-displacementFilter.padding = 10;
+// adding 20 smaller rope points.
+for (let i = 0; i < 20; i++) {
+    points.push(new PIXI.Point(i * ropeLength, 0));
+}
 
-// set both displacement and flag at the same position.
-displacementSprite.position = flag.position;
+// Passing the points array and the image to SimpleRope Class.
+// the rope and the image are created together as one object.
+const strip = new PIXI.SimpleRope(PIXI.Texture.from('assets/assets/snake.png'), points);
 
-app.stage.addChild(displacementSprite);
+// moving the starting point of the rope.
+// centering the image.
+strip.x = -459;
 
-// set the filter with the DisplacementFilter
-flag.filters = [displacementFilter];
+const snakeContainer = new PIXI.Container();
+snakeContainer.x = 400;
+snakeContainer.y = 300;
 
-// the scale of distortion 
-displacementFilter.scale.x = 100;
-displacementFilter.scale.y = 150;
+snakeContainer.scale.set(800 / 1100);
+app.stage.addChild(snakeContainer);
 
-// use ticker since it is predictable.
+snakeContainer.addChild(strip);
+
 app.ticker.add(() => {
-    // Offset the sprite position to make vFilterCoord update to larger value. 
-    // Repeat wrapping makes sure there's still pixels on the coordinates.
-    displacementSprite.x++;
-    // Reset x to 0 when it's over width to keep values from going to very huge numbers.
-    // Repeat the process from the beginning.
-    if (displacementSprite.x > displacementSprite.width) { 
-        displacementSprite.x = 0; 
+    count += 0.1;
+
+    // make the snake
+    for (let i = 0; i < points.length; i++) {
+        points[i].y = Math.sin((i * 0.5) + count) * 30;
+        points[i].x = i * ropeLength + Math.cos((i * 0.3) + count) * 20;
     }
 });
