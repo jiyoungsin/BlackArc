@@ -8,88 +8,41 @@ document.body.appendChild(app.view);
 
 app.stage.interactive = true;
 
-const bg = PIXI.Sprite.from('assets/assets/bg_rotate.jpg');
-bg.anchor.set(0.5);
-
-bg.x = app.screen.width / 2;
-bg.y = app.screen.height / 2;
-
-const filter = new PIXI.filters.ColorMatrixFilter();
-
 const container = new PIXI.Container();
-container.x = app.screen.width / 2;
-container.y = app.screen.height / 2;
-
-const bgFront = PIXI.Sprite.from('assets/assets/bg_scene_rotate.jpg');
-bgFront.anchor.set(0.5);
-
-container.addChild(bgFront);
-
-const light2 = PIXI.Sprite.from('assets/assets/light_rotate_2.png');
-light2.anchor.set(0.5);
-container.addChild(light2);
-
-const light1 = PIXI.Sprite.from('assets/assets/light_rotate_1.png');
-light1.anchor.set(0.5);
-container.addChild(light1);
-
-const panda = PIXI.Sprite.from('assets/assets/panda.png');
-panda.anchor.set(0.5);
-
-container.addChild(panda);
-
 app.stage.addChild(container);
 
-app.stage.filters = [filter];
+const flag = PIXI.Sprite.from('assets/assets/pixi-filters/flag.png');
+container.addChild(flag);
+flag.x = 100;
+flag.y = 100;
 
-let count = 0;
-let enabled = true;
+// grabbing a graphics noise 
+const displacementSprite = PIXI.Sprite.from('assets/assets/pixi-filters/displacement_map_repeat.jpg');
+// Make sure the sprite is wrapping.
+displacementSprite.texture.baseTexture.wrapMode = PIXI.WRAP_MODES.REPEAT;
+const displacementFilter = new PIXI.filters.DisplacementFilter(displacementSprite);
+displacementFilter.padding = 10;
 
-app.stage.on('pointertap', () => {
-    enabled = !enabled;
-    app.stage.filters = enabled ? [filter] : null;
+// set both displacement and flag at the same position.
+displacementSprite.position = flag.position;
+
+app.stage.addChild(displacementSprite);
+
+// set the filter with the DisplacementFilter
+flag.filters = [displacementFilter];
+
+// the scale of distortion 
+displacementFilter.scale.x = 100;
+displacementFilter.scale.y = 150;
+
+// use ticker since it is predictable.
+app.ticker.add(() => {
+    // Offset the sprite position to make vFilterCoord update to larger value. 
+    // Repeat wrapping makes sure there's still pixels on the coordinates.
+    displacementSprite.x++;
+    // Reset x to 0 when it's over width to keep values from going to very huge numbers.
+    // Repeat the process from the beginning.
+    if (displacementSprite.x > displacementSprite.width) { 
+        displacementSprite.x = 0; 
+    }
 });
-
-const help = new PIXI.Text('Click or tap to turn filters on / off.', {
-    fontFamily: 'Arial',
-    fontSize: 12,
-    fontWeight: 'bold',
-    fill: 'white',
-});
-help.y = app.screen.height - 25;
-help.x = 10;
-
-app.stage.addChild(help);
-
-app.ticker.add((delta) => {
-    bg.rotation += 0.01;
-    bgFront.rotation -= 0.01;
-    light1.rotation += 0.02;
-    light2.rotation += 0.01;
-
-    panda.scale.x = 1 + Math.sin(count) * 0.04;
-    panda.scale.y = 1 + Math.cos(count) * 0.04;
-
-    count += 0.1;
-
-    const { matrix } = filter;
-    // [
-    //     // Red
-    //     1, 0, 0, 0, 0, 0, 
-    //     // Green
-    //     1, 0, 0, 0, 0, 0, 
-    //     // Blue
-    //     1, 0, 0, 0, 0, 0, 
-    //     // Alpha
-    //     1, 0
-    // ]
-
-    matrix[0] = 10;
-    matrix[1] = Math.cos(count) * 3;
-    matrix[2] = Math.cos(count);
-    matrix[3] = Math.cos(count) * 1.5;
-    matrix[4] = Math.sin(count / 3) * 2;
-    matrix[5] = Math.sin(count / 2);
-    matrix[6] = Math.sin(count / 4);
-});
-
