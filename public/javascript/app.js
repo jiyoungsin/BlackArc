@@ -1,44 +1,38 @@
-const app = new PIXI.Application();
-document.body.appendChild(app.view);
+// import Map from 'ol/Map';
+// import View from 'ol/View';
+// import TileLayer from 'ol/layer/Tile';
+// import XYZ from 'ol/source/XYZ';
+let map;
+function initialize_map() {
+  map = new ol.Map({
+    target: 'map',
+    layers: [
+      new ol.layer.Tile({
+          source: new ol.source.OSM()
+      })
+    ],
+    view: new ol.View({
+      center: ol.proj.fromLonLat([-79.52,43.70]),
+      zoom: 12
+    })
+  });
+};
 
-let count = 0;
-
-// build a rope!
-const ropeLength = 918 / 20;
-// the image is 918 px
-// 45.9px per point.
-
-// points array 
-const points = [];
-
-// adding 20 smaller rope points.
-for (let i = 0; i < 20; i++) {
-    points.push(new PIXI.Point(i * ropeLength, 0));
+function add_map_point(lat, lng) {
+  var vectorLayer = new ol.layer.Vector({
+    source:new ol.source.Vector({
+      features: [new ol.Feature({
+            geometry: new ol.geom.Point(ol.proj.transform([parseFloat(-79.52), parseFloat(43.70)], 'EPSG:4326', 'EPSG:3857')),
+        })]
+    }),
+    style: new ol.style.Style({
+      image: new ol.style.Icon({
+        anchor: [0.5, 0.5],
+        anchorXUnits: "fraction",
+        anchorYUnits: "fraction",
+        src: "https://upload.wikimedia.org/wikipedia/commons/e/ec/RedDot.svg"
+      })
+    })
+  });
+  map.addLayer(vectorLayer); 
 }
-
-// Passing the points array and the image to SimpleRope Class.
-// the rope and the image are created together as one object.
-const strip = new PIXI.SimpleRope(PIXI.Texture.from('assets/assets/snake.png'), points);
-
-// moving the starting point of the rope.
-// centering the image.
-strip.x = -459;
-
-const snakeContainer = new PIXI.Container();
-snakeContainer.x = 400;
-snakeContainer.y = 300;
-
-snakeContainer.scale.set(800 / 1100);
-app.stage.addChild(snakeContainer);
-
-snakeContainer.addChild(strip);
-
-app.ticker.add(() => {
-    count += 0.1;
-
-    // make the snake
-    for (let i = 0; i < points.length; i++) {
-        points[i].y = Math.sin((i * 0.5) + count) * 30;
-        points[i].x = i * ropeLength + Math.cos((i * 0.3) + count) * 20;
-    }
-});
