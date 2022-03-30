@@ -1,38 +1,41 @@
-// import Map from 'ol/Map';
-// import View from 'ol/View';
-// import TileLayer from 'ol/layer/Tile';
-// import XYZ from 'ol/source/XYZ';
-let map;
-function initialize_map() {
-  map = new ol.Map({
-    target: 'map',
-    layers: [
-      new ol.layer.Tile({
-          source: new ol.source.OSM()
-      })
-    ],
-    view: new ol.View({
-      center: ol.proj.fromLonLat([-79.52,43.70]),
-      zoom: 12
-    })
-  });
-};
 
-function add_map_point(lat, lng) {
-  var vectorLayer = new ol.layer.Vector({
-    source:new ol.source.Vector({
-      features: [new ol.Feature({
-            geometry: new ol.geom.Point(ol.proj.transform([parseFloat(-79.52), parseFloat(43.70)], 'EPSG:4326', 'EPSG:3857')),
-        })]
-    }),
-    style: new ol.style.Style({
-      image: new ol.style.Icon({
-        anchor: [0.5, 0.5],
-        anchorXUnits: "fraction",
-        anchorYUnits: "fraction",
-        src: "https://upload.wikimedia.org/wikipedia/commons/e/ec/RedDot.svg"
-      })
-    })
-  });
-  map.addLayer(vectorLayer); 
-}
+
+
+// initialize Leaflet
+var map = L.map('map').setView({lon: 0, lat: 0}, 2);
+L.geoJson()
+// add the OpenStreetMap tiles
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  maxZoom: 19,
+  attribution: '&copy; <a href="https://openstreetmap.org/copyright">OpenStreetMap contributors</a>'
+}).addTo(map);
+
+// show the scale bar on the lower left corner
+L.control.scale({imperial: true, metric: true}).addTo(map);
+
+const data = {
+  "type": "Feature",
+  "geometry": {
+    "type": "Point",
+    "coordinates": [125.6, 10.1]
+  },
+  "properties": {
+    "name": "Dinagat Islands",
+    "description": "fooooo",
+  },
+};
+L.geoJSON(data, {
+  style: function (feature) {
+      return {color: feature.properties.color};
+  }
+}).bindPopup(function (layer) {
+  return layer.feature.properties.description;
+}).addTo(map);
+
+
+// show a marker on the map
+L.marker([50.5, 30.5],{
+  draggable : true,
+  riseOnHover : true,
+  title: "hover title",
+}).bindPopup('The center of the world').addTo(map);
