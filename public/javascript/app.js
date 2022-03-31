@@ -2,7 +2,9 @@
 
 
 // initialize Leaflet
-var map = L.map('map').setView({lon: 0, lat: 0}, 2);
+var map = L.map('map').setView([50.5, 30.5], 10);
+
+
 L.geoJson()
 // add the OpenStreetMap tiles
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -39,3 +41,9 @@ L.marker([50.5, 30.5],{
   riseOnHover : true,
   title: "hover title",
 }).bindPopup('The center of the world').addTo(map);
+const ourCircle = L.circle([50.5, 30.5], {radius: 20000, color: "red", weight: 50}).addTo(map);
+
+ourCircle.on('click',function (e) {
+  console.log("GHEGERRERE")
+  ourCircle.setLatLng([51.5, 31.5]);
+});
